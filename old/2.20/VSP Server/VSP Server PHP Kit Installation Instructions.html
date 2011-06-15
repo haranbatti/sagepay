@@ -1,0 +1,209 @@
+<HTML>
+	<HEAD>
+		<TITLE>Notes for PHP Server kit</TITLE>
+	</HEAD>
+<BODY>
+
+<H2>Notes for PHP Server kit</H2>
+
+<P>[21/10/2002]</P>
+
+<UL>
+	<LI><A HREF="#1">REQUIREMENTS</A>
+	<LI><A HREF="#2">SETTING UP THE KIT</A>
+	<LI><A HREF="#3">TESTING THE KIT</A>
+	<LI><A HREF="#4">INTEGRATING THE KIT</A>
+	<LI><A HREF="#5">FILES</A>
+</UL>
+
+<H3><A NAME="1">REQUIREMENTS</A></H3>
+
+<UL>
+	<LI><B>PHP4</B><BR>
+	We cannot guarantee that this kit will work correctly on earlier version of PHP. Although it should work on any release of PHP4, we recommend you upgrade to the latest version which can be found at <A HREF="http://www.php.net/downloads.php">http://www.php.net/downloads.php</A> . PHP must be compiled with the cURL extension enabled.
+
+	<LI><B>cURL (Client URL)</B><BR>
+	This is a tool that allows the server to execute certain actions (eg. POST requests) as if it were a client -- it facilitates communication between your server and protx, independently of the user's browser. You can download source and/or binaries for free from <A HREF="http://curl.haxx.se/download.html">http://curl.haxx.se/download.html</A> . You will need the cURL version that supports SSL.
+
+	<LI><B>SSL (Secure Sockets Layer)</B><BR>
+	SSL is the de facto standard for exchanging encrypted data over the Web. If your server does not already support SSL, you can download a free implementation at <A HREF="http://www.openssl.org/source/">http://www.openssl.org/source/</A> -- however you should be aware that only the uncompiled source code is available, which you will need to compile and install manually.
+</UL>
+
+
+<H3><A NAME="2">SETTING UP THE KIT</A></H3>
+
+<P>Assuming your server meets all the requirements above, you are ready to start installing and testing the kit.</P>
+
+<P>First, copy all the files into an appropriate directory on your server and navigate to that directory.</P>
+
+<P><U>EDIT - init-protx.php</U></P>
+
+<P>Here you'll need to set:</P>
+<UL>
+	<LI><B>$Vendor</B>: your vendor name, as agreed with PROTX
+	<LI><B>$InternalIPAddress</B>/<B>$ExternalIPAddress</B>: the IP address(es) of your server
+	<LI><B>$DefaultFilePath</B>: the path to the directory where you put the files (including trailing slash -- eg. if you stored them in a directory in the root called "protxfiles", this would be "protxfiles/")
+</UL>
+
+<P>Now we need to set up a database to test on. The kit has been developed with MySQL in mind (since PHP+MySQL is a very common combination) so all example code for database connection uses MySQL syntax. If you're not using MySQL, you're going to need to convert all the relevant code yourself.</P>
+
+<P>If you are using MySQL, configuring the database can be done automatically. If you open <A HREF="./">index.html</A> in a browser you'll see a link at the bottom which reads '<A HREF="test-create-database.php">Create test MySQL database</A>'. Click on this link and you'll see that you can enter user name, password, database name and table name. Enter whatever values are applicable and click on Submit. Obviously your user must have been set up with the relevant permissions for creating databases and tables. If the process succeeds, you will now have a new database with one table which includes the basic fields that required for testing this kit.</P>
+
+<P>If you aren't using MySQL then you'll need to create the database and table yourself. You will need the following fields (ensure that case is preserved):</P>
+
+<UL>
+	<LI><B>id</B> [4 digit number]
+	<LI><B>Address</B> [200 character text]
+	<LI><B>PostCode</B> [10 character test]
+	<LI><B>VendorTxCode</B> [50 character text]
+	<LI><B>Amount</B> [6 digit number]
+	<LI><B>Status</B> [32 character text]
+	<LI><B>StatusDetail</B> [200 character text]
+	<LI><B>VPSTxId</B> [64 character text]
+	<LI><B>SecurityKey</B> [10 character text]
+	<LI><B>TxAuthNo</B> [20 digit number]
+	<LI><B>TxType</B> [32 character text]
+</UL>
+
+<P>Once your database and table are configured, you can proceed to the next step.</P>
+
+<P><U>EDIT - init-dbconnect.php</U></P>
+<P>In this file, you'll have to specify:</P>
+<UL>
+	<LI><B>$myHost</B>: the host of your database
+	<LI><B>$myUser</B>: the user name for database interaction
+	<LI><B>$myPass</B>: the password for this user
+	<LI><B>$myDB</B>: the database name (as created above)
+	<LI><B>$myTable</B>: the table name (as created above)
+</UL>
+
+<P>That's it. You should now be ready to test the kit.</P>
+
+
+<H3><A NAME="3">TESTING THE KIT</A></H3>
+
+<P>The first step is to attempt a transaction. Follow the link from index.html labelled 'Test purchase transaction'. here's you'll find a very simple form:
+<UL>
+	<LI><B>VendorTxCode</B>: A unique identifier for this transaction that you must generate. for the purpose of this test we've generated one randomly for you, but you can input your own if you like.
+	<LI><B>Amount</B>: The value of the transaction
+	<LI><B>Transaction type</B>: This can be PAYMENT, DEFERRED or PREAUTH.
+	<LI><B>Address</B>: Optional, up to 200 characters
+	<LI><B>Postcode</B>: Optional, up to 10 characters
+	<LI><B>Description</B>: Optional, up to 100 characters
+</UL>
+
+<P>Set your criteria and click on Submit. You'll be taken to a page (test-purchase-execute.php) which confirms that the data has been written to the database. If you click Continue, communication with the protx site will be initiated with protx (via web_save_order.php).</P>
+
+<P>If communication fails or some other error occurs, you'll be notified -- edit web_save_order.php to change the error notification format. If communication succeeds, you'll be taken to the protx site where you'll need to enter test details. Click 'proceed' and you get a confirmation screen. Click 'proceed' again and protx will attempt to communicate with your server (vps_handle_protx_response.php). If for some reason this fails you'll be given an error by the protx site -- if it succeeds you'll be redirected to the appropriate result page on your own site (order completion, error, notauthed etc.).</P>
+
+<P>Assuming the transaction completed successfuly, you're now ready to test the other processes -- refund, release, repeat.</P>
+
+<P>Click on '<A HREF="test-refund.php">Test refund transaction</A>' and you're asked to select one of the successful payments that you've created. Enter a refund amount and optional description, click on Submit and you'll either get a simple confirmation or failure. Because these processes are internal (ie. not customer-facing) the format does not necessaily need to conform to your usual branding requirements.</P>
+
+<P>'<A HREF="test-release.php">Test release deferred payment</A>' will only work if you've already created a DEFERRED payment in the 'Test purchase transaction section'. Just select the relevant payment and click on Submit. You'll either get a simple success or failure notification.</P>
+
+<P>With '<A HREF="test-repeat.php">Test repeat transaction</A>', just select one of the previous successful payments, enter a repeat amount (less than or equal to the original payment) and click Submit. Again you'll get a simple success or failure notification.</P>
+
+<P>If all these processes complete successfully, the kit is working properly. You are now ready to integrate the kit.</P>
+
+
+<H3><A NAME="4">INTEGRATING THE KIT</A></H3>
+
+<P>Although the kit was designed to be easy to set up and test, you will have to do some work to integrate it properly with your site. We have implemented some database interaction code for demonstration and testing purposes, but the integration is not complete. We've tried to include comprehensive comments to help you navigate through the code.</P>
+
+<B>web_save_order.php</B>
+<UL>
+	<LI><B>Status = OK</B>: simple updating of a record implemented.
+	<LI><B>Status = FAIL/[anything else]</B>: no database updating implemented
+</UL>
+
+<B>vps_handle_protx_response.php</B>
+<UL>
+	<LI><B>Status = OK & Signatures match</B>: simple updating of a record implemented.
+	<LI><B>Status = OK & Signatures don't match</B>: no database updating implemented
+	<LI><B>Status = ABORT, NOTAUTHED, ERROR, FAIL</B>: no database updating implemented
+</UL>
+
+<B>vps_order_*.php</B>
+<UL>
+	<LI>no database interaction implemented
+</UL>
+
+<P>Basically, you'll need to create code that ensures that your database is kept up-to-date with the status of any transaction. The demonstration code provided should help you implement this.</P>
+
+<P><B>IMPORTANT</B>: The files test-*.php are intended for testing the kit and not for use in your final site. In particular the refund, release, repeat, create database files SHOULD NOT BE LEFT WHERE THEY COULD BE ACCESSED BY THE PUBLIC. You might also wish to move the init-*.php files somewhere outside the web tree, although you will have to edit any URL references to reflect this.</P>
+
+
+<H3><A NAME="5">FILES</A></H3>
+
+<UL>
+	<LI><B>readme.html</B><BR>
+This file.
+
+<BR><BR>
+
+	<LI><B>index.html</B><BR>
+A simple page to navigate the test environment
+
+<BR><BR>
+
+	<LI><B>init-dbconnect.php</B><BR>
+Contains some settings (host, user name, password, database, table) for connecting to a database. You should consider moving this to a location outside the Web tree, for added security.
+
+	<LI><B>init-functions.php</B><BR>
+Some common functions used by the kit. You should never need to edit this file.
+
+	<LI><B>init-includes.php</B><BR>
+This file is included by most pages. It contains a list of other files to include, as well as some URL settings. You should never need to edit this file, unless you add further files to include.
+
+	<LI><B>init-protx.php</B><BR>
+This contains lots of settings which you will need to tailor for your own site, including your company name, server IP, transaction currency, internal paths etc.
+
+	<LI><B>init-yoursite.php</B><BR>
+A place to add your own settings.
+
+<BR><BR>
+
+	<LI><B>test-*.php</B><BR>
+These are all demonstration files to allow you to test the various processes of the system. You could use these as the basis of equivalent final pages on your system, but they are not intended for that purpose.
+
+<BR><BR>
+
+	<LI><B>vps_handle_protx_repsonse.php</B><BR>
+The script which deals verifies order details with the protx server.
+
+	<LI><B>web_save_order.php</B><BR>
+Sends initial order details to protx and acts appropriately according to the response -- either redirecting to protx or giving an error.
+<BR><BR>
+
+	<LI><B>vps_order_abort.php</B><BR>
+The page to which a customer will be redirected if their order is aborted while on the protx site.
+
+	<LI><B>vps_order_complete.php</B><BR>
+The page to which a customer will be redirected from the protx site when an order has been successfuly completed.
+
+	<LI><B>vps_order_error.php</B><BR>
+The page to which a customer will be redirected from the protx site if an error occurs within protx itself. This should never be used, but it is worth having in place just in case.
+
+	<LI><B>vps_order_notauthed.php</B><BR>
+The page to which a customer will be redirected from the protx site if their order is rejected by the bank.
+
+	<LI><B>vps_order_tamper.php</B><BR>
+The page to which a customer will be redirected from the protx site if their order is discovered to have been tampered with,
+
+<BR><BR>
+
+	<LI><B>vps_order_refund.php</B><BR>
+A page which processes refund requests. You might wish to move this to a more secure location since it should only ever be used by authorised personnel -- however be sure to alter any URLs in the code if you do so.
+
+	<LI><B>vps_order_release.php</B><BR>
+A page which processes release deferred payment requests. You might wish to move this to a more secure location since it should only ever be used by authorised personnel -- however be sure to alter any URLs in the code if you do so.
+
+	<LI><B>vps_order_release.php</B><BR>
+A page which processes repeat payment requests. You might wish to move this to a more secure location since it should only ever be used by authorised personnel -- however be sure to alter any URLs in the code if you do so.
+
+
+</UL>
+
+</BODY>
+</HTML>
