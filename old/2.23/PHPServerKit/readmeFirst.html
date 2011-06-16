@@ -1,0 +1,306 @@
+<HTML>
+<HEAD>
+	<TITLE>Notes for PHP Server kit</TITLE>
+	<style type="text/css">
+        body {
+	        font-family: Arial, Helvetica, sans-serif;
+	        font-size: 12px;
+	        color:  #666666;
+        }
+        a:link, a:visited {
+            color:  #666666;
+        }
+        h2 {  
+            color:#007F64;
+	        font-weight: bold;
+	        font-size:22px;
+	        padding-bottom: 14px;
+        }
+        h3
+        {   background-image: url(images/yellowBlob.png);
+            background-repeat: no-repeat;
+            background-position: 0px 22px;
+            padding: 20px 0px 8px 30px;
+	        font-size: 18px;
+	        color: #E98300;
+        }
+        p {
+           padding-left: 24px;
+        }
+        ul {
+           margin-left: 36px;
+        }
+        #pageHeader {
+            padding: 20px 20px 20px 20px;
+            height: 40px;
+        }
+        .code {
+        	font-family: courier;
+        	font-size: 14px;
+        	font-weight: normal;
+            color:#0000FF;
+        }
+	</style>
+</HEAD>
+<BODY>
+<div id="pageHeader">
+    <img src="images/sage_pay_logo.gif" style="float:left;" />
+    <img src="images/title.png" style="float:right;" />
+</div>
+<h2>Notes for Sage Pay Server PHP Integration kit</h2>
+
+<UL>
+	<LI><A HREF="#1">REQUIREMENTS</A>
+	<LI><A HREF="#2">SETTING UP THE KIT</A>
+	<LI><A HREF="#3">TESTING THE KIT</A>
+	<LI><a href="#4">MODIFYING THE KIT</a>
+    <LI><A HREF="#6">RELATED DOCUMENTATION</A>		
+</UL>
+<h3><A NAME="1">NOTE</a></h3>
+<UL>
+	<li><b>BETA RELEASE</b><br/>This kit is a BETA release. If you come across any integration problems or bugs using this kit please report it to support@sagepay.com<br/><br/>
+	<li>Please note that this kit was developed and tested on a Windows platform. The kit can however be installed on a Linux platform. 	For Windows users, it is assumed that you have installed, and are familiar with, Microsoft Internet Information Services version 6.0. For Linux users, it is assumed you have installed, and are familiar with, Apache HTTP Server 2.0 and higher.<br/><br/>
+	<li>This kit has been tested on IE 7.0 and Firefox 2.0.
+	<br/><br/>
+</UL>
+
+<H3><A NAME="1">REQUIREMENTS</A></H3>
+<ul>
+	<LI><B>PHP</B><br/>
+	Your web server must have the ability to run PHP 5.0 or higher.<br/><br/>
+	<LI><B>cURL</B><br/>
+	This kit uses cURL to establish HTTPS connections and to post web form content to the Sage Pay Gateway. cURL is free open source software which can be run on a variety of platforms. For cURL downloads and installation instructions please visit <a href="http://curl.haxx.se" target="_blank">http://curl.haxx.se</a>
+  	<LI><strong>MySQL and the MySQL ODBC Connector<br></strong>
+  	This kit builds an example database for you, and stores all relevant details about your orders and transactions. It is designed to run almost out-of-the-box using MySQL (a freeware and increasingly powerful database available at <a href="http://www.mysql.com" target="_blank">http://www.mysql.com</a>.
+	<br><br>
+  	This kit was developed used MySQL version 5.0.41, available here: <a href="http://dev.mysql.com/downloads/mysql/5.0.html" target="_blank">http://dev.mysql.com/downloads/mysql/5.0.html</a><br> and the 
+    MySQL ODBC Connector version 3.51.15, available here: <a href="http://dev.mysql.com/downloads/connector/odbc/3.51.html" target="_blank">http://dev.mysql.com/downloads/connector/odbc/3.51.html</a><br>
+    <br>
+    If you download these files, the instructions below will walk you through setting up the database server first. It is extremely lightweight, so will not put too much load on your development box.<br>
+    <br>
+    If you wish to use any other SQL comatible database, you should be able to do so with minimal changes.  You will just need to replicate the table structures shown at the end of this readme.
+    <br>
+</UL>
+
+
+<H3><A NAME="2">SETTING UP THE KIT</A></H3>
+
+<ul>
+  <li>The kit will unzip to a folder called SagePayServerKit. You can place this anywhere on your server, but we recommend keeping the paths simple by installing it on the root of your data drive (e.g. C:\SagePayServerKit or D:\SagePayServerKit).<br>
+    <br>
+  </li>
+  <li>Once that is unzipped, install MySQL as follows:
+    <ul>
+      <li>Run the MySQL installation file</li>
+      <li>Choose custom and change the installation folder to c:\MySQL5.</li>
+      <li>Then click through to remaining install screens with no changes</li>
+      <li>In the Enterprise pop ups, just click next, then leave the Configure the &quot;MySQLServer now&quot; box checked and click Finish.</li>
+      <li>In the config wizard click Next</li>
+      <li>Select Standard Configuration and click Next again</li>
+      <li>Check both &quot;Install as Windows Service&quot; and &quot;Include Bin Directory in Windows PATH&quot; and click Next</li>
+      <li>Set a Root password (we recommend a strong password including upper and lower case letters and number, at least 8 characters long) and select no root access remotely and No Anonymous account. Then click next</li>
+      <li>Click Execute. (You may need to enable port 3306 on your Windows firewall to complete this step. See your system administrator if you need help with this.)<br>
+      <br>
+      </li>
+    </ul>
+  </li>
+  <li>Now open a command prompt (Start-&gt;Run and enter &quot;cmd&quot; and click OK)<br>
+    <br>
+  </li>
+  <li>Type <span class="code">mysqladmin -u root -p create sagepay</span> and hit return<br>
+    <br>
+  </li>
+  <li>Enter your root password when prompted (as set during installation).<br>
+    <br>
+  </li>
+  <li>This creates a database called &ldquo;sagepay&quot;<br>
+    <br>
+  </li>
+  <li>Type <span class="code">mysql -u root -p sagepay</span> and enter your root password when prompted.<br>
+    <br>
+  </li>
+  <li>This connects to the new sagepay database and logs you in.<br>
+    <br>
+  </li>
+  <li>Think of a password for user level access (the password to be used by you web application), and create a sagepay database user called <em>sagepayUser</em> by typing the following:<br>
+    <br>
+    <span class="code">grant usage on *.* to sagepayUser@localhost identified by '[password]';</span><br>
+  <br>
+  replacing [password] with your user password. e.g. grant usage on *.* to sagepayUser@localhost identified by 'ILoveCheese';<br>
+  <br>
+  NB: Passwords are case sensitive! (and don&rsquo;t use this ILoveCheese example!)<br>
+  <br>
+  </li>
+  <li>Now grant that user the rights to select, insert, update and delete tables by typing the following:<br>
+    <br>
+    <span class="code">grant select,insert,update,delete on sagepay.* to sagepayUser@localhost;</span><br>
+  <br>
+  </li>
+  <li>Now you can create the tables to hold all the information we&rsquo;ll be storing and retrieving when using the kits.  We&rsquo;ve provided a script for you called MySQLTables.sql . At the mysql command prompt type:<br>
+    <br>
+    <span class="code">\. [kitpath]\MySQLTables.sql</span><br>
+  <br>
+  So by if you&rsquo;ve installed the kit in the default folder, it would be: \. C:\SagePayServerKit\MySQLTables.sql<br>
+  <br>
+  </li>
+  <li> You can ensure the product data is present by entering the command:<br>
+    <br>
+    <span class="code">SELECT * FROM tblProducts;</span><br>
+  <br>
+  </li>
+  <li>You should see three DVD titles listed, with their prices.<br>
+    <br>
+  </li>
+  <li>Now exit out of MySQL by typing \q at the mysql prompt.<br>
+    <br>
+  </li>
+  <li>Run the MySQLODBC installer.
+    <ul>
+      <li>Select Typical setup, click Next</li>
+      <li>Now click Install.<br>
+        <br>
+      </li>
+    </ul>
+  	</li>
+  	<li>MySQL and the ODBC connector setup is now complete.<br>
+    <br>
+  	</li>
+     <b>Windows XP and 2003 users</b><br/>
+  <li>Ensure that the user under which the web form is running has READ and EXECUTE permissions to the folder in which the kit is installed. Grant those permissions using Windows Explorer. <br>
+    <br>  
+  </li>
+  <li>	Now create a virtual directory in your local IIS to point to the kit. <br>
+  <ul>
+    <li>Open Administrative Tools-&gt;Internet Information Services. </li>
+    <li> Drill down into the Web Sites folder to find your Default Web Site.</li>
+    <li> Right click it and select New-&gt;Virtual Directory</li>
+    <li> Click Next in the dialog.</li>
+    <li> Enter the Alias <em>SagePayServerKit</em> and click Next.</li>
+    <li> Browse to c:\SagePayServerKit (or wherever you installed the kit).  Click OK.</li>
+    <li> Click Next</li>
+    <li> Ensure Read, Run and Execute are selected, then click Next.<br>
+    </li>
+    <li>Click Finish.  The list of pages should appear in the right hand column.<br>
+    </li>
+    <li>Right click and go to Properties, select the Documents tab and remove all pages. </li>
+    <li>Then click Add and enter welcome.php. </li>
+    <li>Click OK </li>
+    <li>Then close the properties dialog with OK.<br><br></li>
+	</ul>
+   	<b>Windows Vista Users</b>
+	<ul>
+    <li> Open Administrative Tools-&gt;Internet Information Services (IIS) Manager<br>
+      </li>
+    <li>	Drill down into the Web Sites folder to find Default Web Site.<br>
+      </li>
+    <li>	Right click it and select Add Virtual Directory<br>
+      </li>
+    <li>	Enter the Alias <em>SagePayServerKit</em> and the in the Path, browse to c:\SagePayServerKit (or wherever you installed the kit). Click OK<br>
+      </li>
+    <li>	Select the SagePayServerKit directory and in Features View, double click Default Document.<br>
+      </li>
+    <li>	Delete all entries and enter welcome.php .  Click Apply in the right hand column.<br>
+      <br>
+    </li>
+	</ul>
+	<b>Linux Users</b>
+	<ul>
+	<li>Set up a virtual host in Apache where you will run the kit from. To do this, open the httpd.conf file in an editor. At the very bottom of this file is a  Virtual Hosts section.
+	<li>Add a new virtual host in accordance with your local set-up. For example if you were creating a directory called SagePayServerKit on php:<br/>
+	&lt;VirtualHost 127.0.0.1&gt;<br/>
+    ServerName SagePayServerKit<br/>
+    DocumentRoot /www/htdocs/SagePayServerKit<br/>
+    &lt;/VirtualHost&gt;<br/>
+	<li>Also in the httpd.conf file, add welcome.php as a default document in the &lt;IfModule mod_dir.c&gt section. For example:<br>
+	&lt;IfModule mod_dir.c&gt;<br/>
+    DirectoryIndex index.htm index.html index.php default.html welcome.php<br/>
+    &lt;/IfModule&gt;<br/>
+
+	<li>Ensure that your root folder is accessible to the Apache program. This requires that the folder belongs to a non-privileged user.</ul><br/>
+	
+  </li>
+  <li>	Open the includes.php file in your preferred web development system, or a plain text editor if you do not have one.<br/>
+    <br>
+  </li>
+  <li>	At the top of the file is a section labelled &ldquo;Values for you to update&rdquo;<br>
+    <br>
+  </li>
+  <li> Edit the <em>$strConnectTo</em> value depending on whether you are using the SIMULATOR, TEST or LIVE environment. We recommend that you use SIMULATOR initially as this offers the flexibility to enable you to test all aspects of the Sage Pay system.</li>
+  <br/><br/>
+  <li>The <em>$strDatabaseUser</em> and <em>$strDatabasePassword</em> relate to the MySQL database you previously created. Change these values if you created a different user name and password to the defaults provided. </li>
+  <br/><br/>  
+  <li>	If you chose not to call your Virtual Directory or Alias <em>SagePayServerKit</em>, change the <em>$strVirtualDir</em> value to the name of the directory you chose.<br>
+    <br>
+  </li>
+  <li>Edit the <em>$strYourSiteFQDN</em> to point to the Fully Qualified DNS Name (FQDN) of your site.<br>
+    <br>
+    Your FQDN must start with http:// (or https:// if it is secured with an SSL certificate) plus the DNS name (e.g. www.sagepay.com).  <br>
+    <br>
+    If you do not have a DNS name, you can use your IP address, but it MUST be the externally facing IP address of your system i.e. an address on which the Sage Pay Forms on the other side of you firewalls can call back to.  <br>
+    <br>
+  If in doubt, contact your network Administrator.<br>
+  <br>
+  NOTE: Do not add the Virtual Directory name to this address.  It is done automatically by the kit.<br>
+  <br>
+  <li>Edit the $strYourSiteInternalFQDN to point to the Fully Qualified DNS Name (FQDN) of your site AS SEEN FROM YOUR DEVELOPMENT MACHINE.<br/><br/>
+	At the end of a Sage Pay Server transaction, the customer is redirected back to the completion page on your site using a client-side browser redirect. On live systems, this page will always be referenced using the strYourSiteFQDN value above. During development and testing, however, it is often the case that the development machine sits behind the same firewall as the server hosting the kit, so your browser might not be able resolve external IPs or dns names.<br/><br/>
+	e.g. Externally your server might have the IP 212.111.32.22, but behind the firewall it may have the IP 192.168.0.99. If your test machine is also on the 192.168.0.n network it may not be able to resolve 212.111.32.22.<br/><br/>
+ </li>	
+ <li>Set the $strYourSiteInternalFQDN to the internal Fully Qualified Domain Name by which your test machine can reach the server (in the example above you'd use http://192.168.0.99/).<br/><br/>
+	If you are not on the same network as the test server, set this value to the same value as strYourSiteFQDN variable.<br/><br/>
+  </li>
+  <li>Set <em>$strVendorName</em> to your Vendor name, chosen when you set up your account through our online application form, or as issued to you by Sage Pay Technical Support if you did not complete the online form.<br>
+    <br>
+  </li>
+  <li>	If the default currency through which you accept payments is not UK Sterling (GBP), then change the <em>$strCurrency</em> field to the correct 3-digit ISO currency code for your transactions e.g (EUR for Euro, USD for US Dollars). ONLY change this value if the merchant account from your acquiring bank supports that currency.<br>
+  <br>
+  <li>The default value for <em>$strTransactionType</em> is PAYMENT. Change this if you have wish to test other payment types set up on your account. Please see the <a href="http://www.sagepay.com/documents/SagePayServerandDirectSharedProtocols.pdf" target="_blank">Server and Direct Shared Protocols</a><BR>for details on payment types.<br/></li>
+  <br>
+  <li>If you are a Sage Pay Partner and wish to flag the transactions with your unique partner id then set <em>strPartnerID</em> to your unique partner id.<br></li>
+  <br>
+  <li>Save the changes to the includes.php file.<br>
+    <br>
+  </li>
+</ul>  
+<br>
+<h3><A NAME="3">TESTING THE KIT</A></h3>
+<ul>
+  <li>Open a browser and go to http://localhost/SagePayServerKit<br>
+    <br>
+  </li>
+  <li> You should see welcome screen.  This will confirm the mySQL has been set up correctly and that the virtual directory is also set up correctly.  If they have not, you will see and error and will need to modify the settings in the includes.asp file to correct the issue.<br>
+    (image here)<br>
+    <br>
+  </li>
+  <li>The pages themselves contain descriptions of how they work, where the code is located, and how to proceed at each step. They will walk you through a complete payment then allow you to perform back office actions like refunds and repeats if you wish.<br>
+    <br>
+  </li>
+  <li>At any stage, you can check the contents of your database by opening a command prompt window, typring: <span class="code">mysql -u sagepayUser -p sagepay</span> and entering your sagepayUser password when prompted.<br>
+    <br>
+  </li>
+  <li>  From here can view the orders table with standard SQL commands like <span class="code">SELECT * from tblOrders;</span> etc.<br>
+    <br>
+  </li>
+  <li>You can also download Windows based MySQL database tools if the command line is not flexible enough for you (see the <a href="http://www.mysql.com" target="_blank">http://www.mysql.com</a>       web site for more details) <br>
+    <br>
+  </li>
+</ul>
+<P>
+<H3><A NAME="4">MODIFYING THE KIT </A></H3>
+
+<p>You are free to use and modify the kits as little or as much as you like. Sage Pay support will be able to advise you how to link your web site with Sage Pay Server, and hopefully the example code in this kit will simplify the process for you. You can use the database design we've provided and extend it as you see fit, or replace it with your own if you wish. <br>
+  <br>
+  As you can appreciate, each web-site implementation is different, so whilst our support teams can help you with the standard, unmodified kit, we cannot support the pages after you've made changes to them.  We will, of course, advise as best we can and will do our best to help make the integration as uncomplicated as possible. <br>
+  <br>
+If you are not comfortable with coding your own website, or find the kits beyind your level of comfort, we can help by providing a list of integration partners with whom we work, who have a good knowledge of our system and can help with your integration. Please visit <a href="http://www.sagepay.com/partners.html" target="_blank">http://www.sagepay.com/partners.html</a> to search for a relevant partner. </p>
+<H3><A NAME="6" id="6">RELATED DOCUMENTATION</A></H3>
+<UL>
+	<LI><a href="http://www.sagepay.com/documents/SagePayServerProtocolandIntegrationGuideline.pdf" target="_blank">Sage Pay Server Protocol and Integration Guideline</a><BR>
+	<LI><a href="http://www.sagepay.com/documents/SagePayServerandDirectSharedProtocols.pdf" target="_blank">Sage Pay Server and Direct Shared Protocols</a><BR>	
+	<LI><a href="http://www.sagepay.com/documents/MySagePayUserManual.pdf" target="_blank">My Sage Pay User Manual</a><BR>	
+	<LI><a href="http://www.sagepay.com/documents/SagePayFraudPrevention.pdf" target="_blank">How to Prevent Fraud</a><BR>	
+</UL>
+<br />
+<br />
+</BODY>
+</HTML>
